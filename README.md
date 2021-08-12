@@ -1,4 +1,4 @@
-# elm-date-time-picker
+# ELM Material Date / Time pickers
 ## Demo
 [Live demo](https://enrimilan.github.io/elm-date-time-picker)
 
