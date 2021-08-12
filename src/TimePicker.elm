@@ -8,17 +8,17 @@ import Element.Font as Font
 import Element.Keyed
 import Hatchinq.Attribute as HatchinqAttr exposing (Attribute, toHeight, toId, toWidth, withAttributes)
 import Hatchinq.Button as Button
-import Hatchinq.IconButton as IconButton exposing (withTextColor)
+import Hatchinq.IconButton exposing (withTextColor)
 import Hatchinq.TextField as TextField exposing (withError)
-import Hatchinq.Theme exposing (Theme)
+import Hatchinq.Theme exposing (Theme, white)
 import Html
 import Html.Attributes exposing (style)
-import Html.Events exposing (custom, on)
+import Html.Events exposing (on)
 import Json.Decode as Decode exposing (Decoder, at, float, int, map4)
 import List exposing (range)
 import Svg exposing (Svg)
 import Svg.Attributes as SvgAttr
-import Task
+import Utils exposing (iconButton, inactiveColor, msgToCmd, pointerCursor, robotoFont, stopPropagation)
 
 
 
@@ -283,11 +283,6 @@ isValidTime { hour, minute } =
     hour >= 1 && hour <= 12 && minute >= 0 && minute <= 59
 
 
-msgToCmd : msg -> Cmd msg
-msgToCmd msg =
-    Task.succeed msg |> Task.perform identity
-
-
 
 -- VIEW
 
@@ -305,9 +300,6 @@ view { theme, lift } attributes { label, state, time, timeChanged } =
     let
         textField =
             TextField.configure { theme = theme, lift = TimeStringStateChange }
-
-        iconButton =
-            IconButton.configure { theme = theme }
 
         timeStringValue =
             Maybe.withDefault (timeToString time) state.timeStringValue
@@ -338,7 +330,7 @@ view { theme, lift } attributes { label, state, time, timeChanged } =
         showDialogButton =
             el
                 [ alignRight, centerY, paddingEach { left = 0, right = 8, top = 0, bottom = 0 } ]
-                (iconButton [withTextColor <| rgb255 45 45 45 ] { icon = "event", onPress = Just <| OpenDialog time })
+                (iconButton theme [ withTextColor <| rgb255 45 45 45 ] { icon = "event", onPress = Just <| OpenDialog time })
 
         timePickerTextField =
             Element.map lift <|
@@ -370,15 +362,6 @@ view { theme, lift } attributes { label, state, time, timeChanged } =
 clockDialogView : State -> Theme -> TimeChangedMessage msg -> Element (Message msg)
 clockDialogView state theme timeChanged =
     let
-        robotoFont =
-            Font.family
-                [ Font.external
-                    { name = "Roboto"
-                    , url = "https://fonts.googleapis.com/css?family=Roboto"
-                    }
-                , Font.sansSerif
-                ]
-
         button =
             Button.configure { theme = theme }
 
@@ -386,11 +369,7 @@ clockDialogView state theme timeChanged =
             button |> withAttributes [ Button.text ]
     in
     el
-        [ robotoFont
-        , Element.Events.onMouseUp EndDrag
-        , Background.color white
-        , htmlAttribute <| custom "click" (Decode.succeed { message = NoOp, stopPropagation = True, preventDefault = True })
-        ]
+        [ robotoFont, Element.Events.onMouseUp EndDrag, Background.color white, stopPropagation NoOp ]
     <|
         column
             [ spacing 32 ]
@@ -788,21 +767,6 @@ clockHeight =
     260
 
 
-inactiveColor : Color
-inactiveColor =
-    rgba255 255 255 255 0.54
-
-
-white : Color
-white =
-    rgb255 255 255 255
-
-
-pointerCursor : Element.Attribute (Message msg)
-pointerCursor =
-    htmlAttribute <| style "cursor" "pointer"
-
-
 hourPositions : List ( Hour, Point )
 hourPositions =
     List.map hourPosition (range 1 12)
@@ -859,6 +823,7 @@ clockCenter =
     Point 130 130
 
 
+radius : Float
 radius =
     100
 
