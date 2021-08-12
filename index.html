@@ -7544,7 +7544,11 @@ var $author$project$DatePicker$update = F3(
 			case 'ChangeYear':
 				var year = message.a;
 				var tmpDate = {day: state.tmpDate.day, month: state.tmpDate.month, year: year};
-				var currentMonth = {daysGrid: state.currentMonth.daysGrid, month: state.currentMonth.month, year: year};
+				var currentMonth = {
+					daysGrid: A2($author$project$DatePicker$days, year, tmpDate.month),
+					month: tmpDate.month,
+					year: year
+				};
 				return _Utils_Tuple2(
 					_Utils_update(
 						state,

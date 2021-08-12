@@ -209,11 +209,11 @@ update message { lift } state =
 
         ChangeYear year ->
             let
-                currentMonth =
-                    { year = year, month = state.currentMonth.month, daysGrid = state.currentMonth.daysGrid }
-
                 tmpDate =
                     { day = state.tmpDate.day, month = state.tmpDate.month, year = year }
+
+                currentMonth =
+                    { year = year, month = tmpDate.month, daysGrid = days year tmpDate.month }
             in
             ( { state | currentMonth = currentMonth, tmpDate = tmpDate, currentView = CalendarView }, Cmd.none )
 
