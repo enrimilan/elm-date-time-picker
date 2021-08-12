@@ -16,6 +16,7 @@ import Html.Attributes exposing (style)
 import Html.Events exposing (on)
 import Json.Decode as Decode exposing (Decoder, at, float, int, map4)
 import List exposing (range)
+import String exposing (padLeft)
 import Svg exposing (Svg)
 import Svg.Attributes as SvgAttr
 import Utils exposing (iconButton, inactiveColor, msgToCmd, pointerCursor, robotoFont, stopPropagation)
@@ -320,7 +321,7 @@ view { theme, lift } attributes { label, state, time, timeChanged } =
                         Nothing
 
                     else
-                        Just "Invalid Time Format"
+                        Just "Invalid Time"
                 }
             , HatchinqAttr.width <| Maybe.withDefault (px 280) (toWidth attributes)
             , HatchinqAttr.height <| Maybe.withDefault fill (toHeight attributes)
@@ -406,7 +407,7 @@ controls state theme =
                 , pointerCursor
                 ]
             <|
-                (text <| format state.tmpTime.hour)
+                (text <| padLeft 2 '0' <| String.fromInt state.tmpTime.hour)
 
         minuteControl =
             el
@@ -420,7 +421,7 @@ controls state theme =
                 , pointerCursor
                 ]
             <|
-                (text <| format state.tmpTime.minute)
+                (text <| padLeft 2 '0' <| String.fromInt state.tmpTime.minute)
 
         periodControls =
             [ el
@@ -714,7 +715,7 @@ thumbWithNumber position backgroundColor fontColor number =
                     , Html.Attributes.style "margin" "0 auto"
                     , Html.Attributes.style "color" fontColor
                     ]
-                    [ Html.text <| format number
+                    [ Html.text <| padLeft 2 '0' <| String.fromInt number
                     ]
                 ]
             ]
@@ -746,15 +747,6 @@ thumbWithDot position theme =
                 []
             ]
         ]
-
-
-format : Int -> String
-format hourOrMinute =
-    if hourOrMinute < 10 then
-        "0" ++ String.fromInt hourOrMinute
-
-    else
-        String.fromInt hourOrMinute
 
 
 clockWidth : Int
@@ -858,7 +850,13 @@ timePeriodFromString timePeriodString =
 
 timeToString : Time -> String
 timeToString time =
-    String.concat [ format time.hour, ":", format time.minute, " ", timePeriodToString time.period ]
+    String.concat
+        [ padLeft 2 '0' <| String.fromInt time.hour
+        , ":"
+        , padLeft 2 '0' <| String.fromInt time.minute
+        , " "
+        , timePeriodToString time.period
+        ]
 
 
 parseTime : String -> Maybe Time
