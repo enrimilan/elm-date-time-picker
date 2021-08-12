@@ -1,7 +1,9 @@
 module Examples exposing (Message(..), State, init, main, theme, timePicker, timePickerConfig, update, view)
 
 import Browser
-import Element exposing (Element, column, focusStyle, layoutWith, padding, spacing, text)
+import DatePicker exposing (DatePickerDate, maxYear, minYear)
+import Element exposing (Element, centerX, column, el, fill, focusStyle, layoutWith, padding, row, spacing, text, width)
+import Element.Font as Font
 import Hatchinq.Color exposing (rgba)
 import Hatchinq.Theme as Theme exposing (..)
 import Html exposing (Html)
@@ -21,6 +23,8 @@ main =
 type alias State =
     { time : Time
     , timePickerState : TimePicker.State
+    , date : DatePickerDate
+    , datePickerState : DatePicker.State
     }
 
 
@@ -28,6 +32,8 @@ init : {} -> ( State, Cmd Message )
 init _ =
     ( { time = { hour = 1, minute = 37, period = PM }
       , timePickerState = TimePicker.init
+      , date = { day = 23, month = 5, year = 2007 }
+      , datePickerState = DatePicker.init
       }
     , Cmd.none
     )
@@ -40,6 +46,8 @@ init _ =
 type Message
     = TimePickerMessage (TimePicker.Message Message)
     | TimeChanged Time
+    | DatePickerMessage (DatePicker.Message Message)
+    | DateChanged DatePickerDate
 
 
 
@@ -59,6 +67,16 @@ update message state =
         TimeChanged time ->
             ( { state | time = time }, Cmd.none )
 
+        DatePickerMessage datePickerMessage ->
+            let
+                ( datePickerState, cmd ) =
+                    DatePicker.update datePickerMessage datePickerConfig state.datePickerState
+            in
+            ( { state | datePickerState = datePickerState }, cmd )
+
+        DateChanged date ->
+            ( { state | date = date }, Cmd.none )
+
 
 
 -- VIEW
@@ -74,11 +92,21 @@ timePickerConfig =
     }
 
 
+datePicker =
+    DatePicker.configure datePickerConfig
+
+
+datePickerConfig =
+    { theme = theme
+    , lift = DatePickerMessage
+    }
+
+
 theme : Theme
 theme =
     let
         ( r, g, b ) =
-            ( 33, 150, 243 )
+            ( 25, 118, 210 )
 
         a =
             1
@@ -98,6 +126,15 @@ view state =
                 , timeChanged = TimeChanged
                 }
 
+        ( datePickerTextField, datePickerDialog ) =
+            datePicker
+                [ minYear 1900, maxYear 2100 ]
+                { label = "Date"
+                , state = state.datePickerState
+                , date = state.date
+                , dateChanged = DateChanged
+                }
+
         noOutline =
             focusStyle
                 { borderColor = Nothing
@@ -107,13 +144,14 @@ view state =
 
         content =
             column
-                [ spacing 16, padding 16 ]
+                [ spacing 16, padding 16, width fill ]
                 [ Theme.stylesheet theme
-                , timePickerTextField
-                , text <| Debug.toString state.time
+                , el [ Font.size 24 ] <| text "ELM Material Date / Time pickers"
+                , row [ spacing 8, centerX ] [ datePickerTextField, text <| Debug.toString state.date ]
+                , row [ spacing 8, centerX ] [ timePickerTextField, text <| Debug.toString state.time ]
                 ]
     in
     layoutWith
         { options = [ noOutline ] }
-        [ timePickerDialog ]
+        [ timePickerDialog, datePickerDialog ]
         content
